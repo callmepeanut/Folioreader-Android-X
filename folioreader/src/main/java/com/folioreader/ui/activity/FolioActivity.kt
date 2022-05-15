@@ -66,6 +66,7 @@ import com.folioreader.ui.view.MediaControllerCallback
 import com.folioreader.util.AppUtil
 import com.folioreader.util.FileUtil
 import com.folioreader.util.UiUtil
+import com.folioreader.util.immersiveStatusBar
 import org.greenrobot.eventbus.EventBus
 import org.readium.r2.shared.Link
 import org.readium.r2.shared.Publication
@@ -77,8 +78,7 @@ import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 
-class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControllerCallback,
-    View.OnSystemUiVisibilityChangeListener {
+class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControllerCallback {
 
     private var bookFileName: String? = null
 
@@ -108,7 +108,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
     private var mEpubSourceType: EpubSourceType? = null
     private var mEpubRawId = 0
     private var mediaControllerFragment: MediaControllerFragment? = null
-    private var direction: Config.Direction = Config.Direction.VERTICAL
+    private var direction: Config.Direction = Config.Direction.HORIZONTAL
     private var portNumber: Int = Constants.DEFAULT_PORT_NUMBER
     private var streamerUri: Uri? = null
 
@@ -269,10 +269,10 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         // getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setConfig(savedInstanceState)
-        initDistractionFreeMode(savedInstanceState)
 
         setContentView(R.layout.folio_activity)
         this.savedInstanceState = savedInstanceState
+        this.immersiveStatusBar(true)
 
         if (savedInstanceState != null) {
             searchAdapterDataBundle = savedInstanceState.getBundle(SearchAdapter.DATA_BUNDLE)
@@ -664,26 +664,9 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         }
     }
 
-    private fun initDistractionFreeMode(savedInstanceState: Bundle?) {
-        Log.v(LOG_TAG, "-> initDistractionFreeMode")
-
-        window.decorView.setOnSystemUiVisibilityChangeListener(this)
-
-        // Deliberately Hidden and shown to make activity contents lay out behind SystemUI
-        hideSystemUI()
-        showSystemUI()
-
-        distractionFreeMode =
-            savedInstanceState != null && savedInstanceState.getBoolean(BUNDLE_DISTRACTION_FREE_MODE)
-    }
-
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         Log.v(LOG_TAG, "-> onPostCreate")
-
-        if (distractionFreeMode) {
-            handler!!.post { hideSystemUI() }
-        }
     }
 
     /**
@@ -743,7 +726,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
      * 3. In tablets, navigation bar is always placed at bottom of the screen.
      */
     private fun computeViewportRect(): Rect {
-        //Log.v(LOG_TAG, "-> computeViewportRect");
+        Log.v(LOG_TAG, "-> computeViewportRect")
 
         val viewportRect = Rect(appBarLayout!!.insets)
         if (distractionFreeMode)
@@ -789,68 +772,22 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         return WeakReference(this)
     }
 
-    override fun onSystemUiVisibilityChange(visibility: Int) {
-        Log.v(LOG_TAG, "-> onSystemUiVisibilityChange -> visibility = $visibility")
-
-        distractionFreeMode = visibility != View.SYSTEM_UI_FLAG_VISIBLE
-        Log.v(LOG_TAG, "-> distractionFreeMode = $distractionFreeMode")
-
-        if (actionBar != null) {
-            if (distractionFreeMode) {
-                actionBar!!.hide()
-            } else {
-                actionBar!!.show()
-            }
-        }
-    }
-
     override fun toggleSystemUI() {
+        Log.i(LOG_TAG, "-> toggleSystemUI")
 
-        if (distractionFreeMode) {
-            showSystemUI()
+        if (appBarLayout?.visibility == View.VISIBLE) {
+            hideSettingView()
         } else {
-            hideSystemUI()
+            showSettingView()
         }
     }
 
-    private fun showSystemUI() {
-        Log.v(LOG_TAG, "-> showSystemUI")
-
-        if (Build.VERSION.SDK_INT >= 16) {
-            val decorView = window.decorView
-            decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        } else {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-            if (appBarLayout != null)
-                appBarLayout!!.setTopMargin(statusBarHeight)
-            onSystemUiVisibilityChange(View.SYSTEM_UI_FLAG_VISIBLE)
-        }
+    private fun showSettingView() {
+        appBarLayout?.visibility = View.VISIBLE
     }
 
-    private fun hideSystemUI() {
-        Log.v(LOG_TAG, "-> hideSystemUI")
-
-        if (Build.VERSION.SDK_INT >= 16) {
-            val decorView = window.decorView
-            decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_IMMERSIVE
-                    // Set the content to appear under the system bars so that the
-                    // content doesn't resize when the system bars hide and show.
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    // Hide the nav bar and status bar
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN)
-        } else {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-            )
-            // Specified 1 just to mock anything other than View.SYSTEM_UI_FLAG_VISIBLE
-            onSystemUiVisibilityChange(1)
-        }
+    private fun hideSettingView() {
+        appBarLayout?.visibility = View.GONE
     }
 
     override fun getEntryReadLocator(): ReadLocator? {
