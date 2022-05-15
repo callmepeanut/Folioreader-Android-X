@@ -119,4 +119,5 @@ dependencies {
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-extensions:$versions.lifecycle"
 }
-apply from: '../folioreader/bintray/bintrayv1.gradle'
+//apply from: '../folioreader/bintray/bintrayv1.gradle'
+apply from: 'publishLocal.gradle'

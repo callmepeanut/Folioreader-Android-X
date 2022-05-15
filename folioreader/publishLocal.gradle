@@ -1,0 +1,62 @@
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+project.afterEvaluate {
+    publishToMavenLocal {
+        def groupId = publishedGroupId
+        def artifactId = artifact
+        def versionName = libraryVersion + "-local"
+        def debugSuffix = "-debug"
+        def releaseSuffix = "-release"
+        publishing {
+            publications {
+                LibraryRelease(MavenPublication) {
+//                    from components.release
+                    artifact(sourceJar)
+                    setGroupId groupId
+                    setArtifactId artifactId
+                    version versionName + releaseSuffix
+
+                    artifact("$buildDir/outputs/aar/${artifactId}-release.aar")
+                }
+                LibraryDebug(MavenPublication) {
+//                    from components.debug
+                    artifact(sourceJar)
+                    setGroupId groupId
+                    setArtifactId artifactId
+                    version versionName + debugSuffix
+
+                    artifact("$buildDir/outputs/aar/${artifactId}-debug.aar")
+                }
+            }
+            publications.all {
+                pom.withXml {
+                    asNode().dependencies.'*'
+                            .findAll() {
+                                it.scope.text() == 'runtime' &&
+                                        project.configurations.implementation.allDependencies.find {
+                                            dep -> dep.name == it.artifactId.text()
+                                        }
+                            }.each { it.scope*.value = 'compile'}
+                }
+            }
+        }
+
+        doLast {
+            def prettyPrint = {
+                1.upto(100, { print "=" })
+                println()
+            }
+            println()
+            prettyPrint()
+            println "PUBLICATION FINISHED"
+            println "Artifact RELEASE: " + groupId + ":" + artifactId +  ":" + versionName + releaseSuffix
+            println "Artifact DEBUG: " + groupId + ":" + artifactId +  ":" + versionName + debugSuffix
+            prettyPrint()
+        }
+    }
+}
