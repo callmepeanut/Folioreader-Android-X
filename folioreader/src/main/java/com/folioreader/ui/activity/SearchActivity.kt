@@ -128,7 +128,9 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
         }
 
         spineSize = intent.getIntExtra(BUNDLE_SPINE_SIZE, 0)
-        searchUri = intent.getParcelableExtra(BUNDLE_SEARCH_URI)
+        intent.getParcelableExtra<Uri>(BUNDLE_SEARCH_URI)?.let {
+            searchUri = it
+        }
 
         searchAdapter = SearchAdapter(this)
         searchAdapter.onItemClickListener = this
@@ -156,10 +158,13 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
     }
 
     override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
         Log.v(LOG_TAG, "-> onNewIntent")
 
         if (intent.hasExtra(BUNDLE_SEARCH_URI)) {
-            searchUri = intent.getParcelableExtra(BUNDLE_SEARCH_URI)
+            intent.getParcelableExtra<Uri>(BUNDLE_SEARCH_URI)?.let {
+                searchUri = it
+            }
         } else {
             intent.putExtra(BUNDLE_SEARCH_URI, searchUri)
             intent.putExtra(BUNDLE_SPINE_SIZE, spineSize)
@@ -174,7 +179,7 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
     private fun handleSearch() {
         Log.v(LOG_TAG, "-> handleSearch")
 
-        val query: String = intent.getStringExtra(SearchManager.QUERY)
+        val query: String = intent.getStringExtra(SearchManager.QUERY) ?: ""
         val newDataBundle = Bundle()
         newDataBundle.putString(
             ListViewType.KEY,
@@ -292,9 +297,9 @@ class SearchActivity : AppCompatActivity(), OnItemClickListener {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        val itemId = item?.itemId
+        val itemId = item.itemId
 
         if (itemId == R.id.itemSearch) {
             Log.v(LOG_TAG, "-> onOptionsItemSelected -> ${item.title}")
