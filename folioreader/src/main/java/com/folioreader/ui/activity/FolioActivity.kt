@@ -1002,16 +1002,14 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
                         mFolioPageFragmentAdapter!!.getItem(position - 1) as FolioPageFragment?
                     if (folioPageFragment != null) {
                         folioPageFragment.scrollToLast()
-                        if (folioPageFragment.mWebview != null)
-                            folioPageFragment.mWebview!!.dismissPopupWindow()
+                        folioPageFragment.dismissPopupWindow()
                     }
 
                     folioPageFragment =
                         mFolioPageFragmentAdapter!!.getItem(position + 1) as FolioPageFragment?
                     if (folioPageFragment != null) {
                         folioPageFragment.scrollToFirst()
-                        if (folioPageFragment.mWebview != null)
-                            folioPageFragment.mWebview!!.dismissPopupWindow()
+                        folioPageFragment.dismissPopupWindow()
                     }
                 }
             }

@@ -236,11 +236,9 @@ class FolioWebView : WebView {
             distanceY: Float
         ): Boolean {
 //            Log.v(LOG_TAG, "-> onScroll -> e1 = " + e1 + ", e2 = " + e2 + ", distanceX = " + distanceX + ", distanceY = " + distanceY);
-            parentFragment.mWebview?.let { wv ->
-                calculatedProgress = (wv.scrollY.toDouble() / wv.contentHeightVal.toDouble()) * 100.0
-//                val fmtProgress = "%.2f".format(calculatedProgress)
-//                println("VProgress: $fmtProgress%")
-            }
+            calculatedProgress = parentFragment.getCalculatedProgress()
+//            val fmtProgress = "%.2f".format(calculatedProgress)
+//            println("VProgress: $fmtProgress%")
             lastScrollType = LastScrollType.USER
             return false
         }

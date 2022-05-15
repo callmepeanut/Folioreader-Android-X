@@ -104,7 +104,7 @@ class FolioPageFragment : Fragment(),
 
     private lateinit var loadingView: LoadingView
     private var mScrollSeekbar: VerticalSeekbar? = null
-    lateinit var mWebview: FolioWebView
+    private lateinit var mWebview: FolioWebView
     private lateinit var webViewPager: WebViewPager
     private var mPagesLeftTextView: TextView? = null
     private var mMinutesLeftTextView: TextView? = null
@@ -184,6 +184,21 @@ class FolioPageFragment : Fragment(),
         updatePagesLeftTextBg()
 
         return mRootView
+    }
+
+    fun dismissPopupWindow() {
+        if (::mWebview.isInitialized) {
+            mWebview.dismissPopupWindow()
+        }
+    }
+
+    fun getCalculatedProgress() : Double {
+        if (::mWebview.isInitialized) {
+            mWebview.let { wv ->
+                return (wv.scrollY.toDouble() / wv.contentHeightVal.toDouble()) * 100.0
+            }
+        }
+        return 0.0
     }
 
     /**
@@ -343,22 +358,26 @@ class FolioPageFragment : Fragment(),
 
     fun scrollToLast() {
 
-        val isPageLoading = loadingView == null || loadingView!!.visibility == View.VISIBLE
+        val isPageLoading = !::loadingView.isInitialized || loadingView.visibility == View.VISIBLE
         Log.v(LOG_TAG, "-> scrollToLast -> isPageLoading = $isPageLoading")
 
         if (!isPageLoading) {
-            loadingView!!.show()
+            if (::loadingView.isInitialized) {
+                loadingView.show()
+            }
             mWebview.loadUrl("javascript:scrollToLast()")
         }
     }
 
     fun scrollToFirst() {
 
-        val isPageLoading = loadingView == null || loadingView!!.visibility == View.VISIBLE
+        val isPageLoading = !::loadingView.isInitialized || loadingView.visibility == View.VISIBLE
         Log.v(LOG_TAG, "-> scrollToFirst -> isPageLoading = $isPageLoading")
 
         if (!isPageLoading) {
-            loadingView!!.show()
+            if (::loadingView.isInitialized) {
+                loadingView.show()
+            }
             mWebview.loadUrl("javascript:scrollToFirst()")
         }
     }
