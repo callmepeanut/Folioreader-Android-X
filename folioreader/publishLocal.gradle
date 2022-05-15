@@ -34,14 +34,22 @@ project.afterEvaluate {
                 }
             }
             publications.all {
+                println("start write pom file...")
                 pom.withXml {
-                    asNode().dependencies.'*'
-                            .findAll() {
-                                it.scope.text() == 'runtime' &&
-                                        project.configurations.implementation.allDependencies.find {
-                                            dep -> dep.name == it.artifactId.text()
-                                        }
-                            }.each { it.scope*.value = 'compile'}
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    def dependenciesList = []
+                    dependenciesList.addAll(configurations.api.allDependencies)
+                    dependenciesList.addAll(configurations.implementation.allDependencies)
+                    dependenciesList.each {
+                        if (null != it.group) {
+                            def dpNode = dependenciesNode.appendNode('dependency')
+                            dpNode.appendNode('groupId', it.group)
+                            dpNode.appendNode('artifactId', it.name)
+                            dpNode.appendNode('version', it.version)
+                            dpNode.appendNode('scope', 'compile')
+                            //println(it.group + ':' + it.name)
+                        }
+                    }
                 }
             }
         }
