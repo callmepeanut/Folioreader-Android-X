@@ -34,7 +34,10 @@ import android.os.Parcelable
 import android.text.TextUtils
 import android.util.DisplayMetrics
 import android.util.Log
-import android.view.*
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.Window
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.ActionBar
@@ -136,6 +139,10 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         const val ACTION_SEARCH_CLEAR = "ACTION_SEARCH_CLEAR"
         private const val HIGHLIGHT_ITEM = "highlight_item"
         private const val BOOKMARK_ITEM = "bookmark_item"
+
+        private const val DEFAULT_FONT_NAME =
+            "file:///android_asset/sourcehanserif/SourceHanSerifCN-Regular.otf"
+        private const val DEFAULT_FONT_SIZE = 4
     }
 
     private val closeBroadcastReceiver = object : BroadcastReceiver() {
@@ -1053,6 +1060,9 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         } else {
             if (intentConfig != null && overrideConfig) {
                 config = intentConfig
+                config.font = DEFAULT_FONT_NAME
+                config.fontSize = DEFAULT_FONT_SIZE
+                config.isShowTextSelection = true
             } else {
                 config = savedConfig
             }

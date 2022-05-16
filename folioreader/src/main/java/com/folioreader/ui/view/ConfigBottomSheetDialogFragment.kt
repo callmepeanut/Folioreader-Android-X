@@ -213,7 +213,8 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private fun selectFont(selectedFont: String, isReloadNeeded: Boolean) {
         // parse font from name
-        config.font = selectedFont
+        config.font = "file:///android_asset/sourcehanserif/SourceHanSerifCN-Regular.otf" //selectedFont
+        config.fontSize = 65
 
         if (isAdded && isReloadNeeded) {
             AppUtil.saveConfig(activity, config)
