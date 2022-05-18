@@ -9,9 +9,7 @@ project.afterEvaluate {
     publishToMavenLocal {
         def groupId = publishedGroupId
         def artifactId = artifact
-        def versionName = libraryVersion + "-local"
-        def debugSuffix = "-debug"
-        def releaseSuffix = "-release"
+        def versionName = libraryVersion
         publishing {
             publications {
                 LibraryRelease(MavenPublication) {
@@ -19,7 +17,7 @@ project.afterEvaluate {
                     artifact(sourceJar)
                     setGroupId groupId
                     setArtifactId artifactId
-                    version versionName + releaseSuffix
+                    version versionName
 
                     artifact("$buildDir/outputs/aar/${artifactId}-release.aar")
                 }
@@ -28,7 +26,7 @@ project.afterEvaluate {
                     artifact(sourceJar)
                     setGroupId groupId
                     setArtifactId artifactId
-                    version versionName + debugSuffix
+                    version versionName
 
                     artifact("$buildDir/outputs/aar/${artifactId}-debug.aar")
                 }
@@ -62,8 +60,8 @@ project.afterEvaluate {
             println()
             prettyPrint()
             println "PUBLICATION FINISHED"
-            println "Artifact RELEASE: " + groupId + ":" + artifactId +  ":" + versionName + releaseSuffix
-            println "Artifact DEBUG: " + groupId + ":" + artifactId +  ":" + versionName + debugSuffix
+            println "Artifact RELEASE: " + groupId + ":" + artifactId +  ":" + versionName
+            println "Artifact DEBUG: " + groupId + ":" + artifactId +  ":" + versionName
             prettyPrint()
         }
     }

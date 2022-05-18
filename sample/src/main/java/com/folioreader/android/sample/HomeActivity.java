@@ -94,14 +94,15 @@ public class HomeActivity extends AppCompatActivity
     }
 
     private ReadLocator getLastReadLocator() {
-
-        String jsonString = loadAssetTextAsString("Locators/LastReadLocators/last_read_locator_1.json");
-        return ReadLocator.fromJson(jsonString);
+        return UserDataHelper.INSTANCE.getDemoBookLocator(this);
+//        String jsonString = loadAssetTextAsString("Locators/LastReadLocators/last_read_locator_1.json");
+//        return ReadLocator.fromJson(jsonString);
     }
 
     @Override
     public void saveReadLocator(ReadLocator readLocator) {
         Log.i(LOG_TAG, "-> saveReadLocator -> " + readLocator.toJson());
+        UserDataHelper.INSTANCE.saveDemoBookLocator(this, readLocator);
     }
 
     /*
