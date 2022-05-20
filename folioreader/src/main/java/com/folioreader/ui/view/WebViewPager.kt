@@ -85,7 +85,7 @@ class WebViewPager : ViewPager {
     }
 
     fun setHorizontalPageCount(horizontalPageCount: Int) {
-        //Log.d(LOG_TAG, "-> horizontalPageCount = " + horizontalPageCount);
+        Log.d(LOG_TAG, "-> horizontalPageCount = $horizontalPageCount");
 
         this.horizontalPageCount = horizontalPageCount
         adapter = WebViewPagerAdapter()

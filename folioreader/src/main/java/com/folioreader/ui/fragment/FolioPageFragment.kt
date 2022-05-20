@@ -643,7 +643,7 @@ class FolioPageFragment : Fragment(),
 
     @JavascriptInterface
     fun storeLastReadCfi(cfi: String) {
-
+        Log.i(LOG_TAG, "-> storeLastReadCfi: $cfi")
         synchronized(this) {
             var href = spineItem.href
             if (href == null) href = ""

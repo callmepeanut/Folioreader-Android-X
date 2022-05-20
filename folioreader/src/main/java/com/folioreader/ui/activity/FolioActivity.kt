@@ -733,7 +733,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
      * 3. In tablets, navigation bar is always placed at bottom of the screen.
      */
     private fun computeViewportRect(): Rect {
-        Log.v(LOG_TAG, "-> computeViewportRect")
+        Log.i(LOG_TAG, "-> computeViewportRect")
 
         val viewportRect = Rect(appBarLayout!!.insets)
         if (distractionFreeMode)
@@ -752,6 +752,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
     override fun getViewportRect(unit: DisplayUnit): Rect {
 
         val viewportRect = computeViewportRect()
+        Log.i(LOG_TAG, "-> getViewportRect: $viewportRect")
         when (unit) {
             DisplayUnit.PX -> return viewportRect
 

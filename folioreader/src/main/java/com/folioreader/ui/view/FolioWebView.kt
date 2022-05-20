@@ -142,6 +142,7 @@ class FolioWebView : WebView {
 
     @JavascriptInterface
     fun getViewportRect(unitString: String): String {
+        Log.i(LOG_TAG, "-> getViewportRect unitString:$unitString")
         val unit = DisplayUnit.valueOf(unitString)
         val rect = folioActivityCallback.getViewportRect(unit)
         return UiUtil.rectToDOMRectJson(rect)
