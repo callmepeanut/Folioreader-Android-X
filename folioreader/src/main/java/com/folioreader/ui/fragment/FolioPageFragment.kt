@@ -44,6 +44,7 @@ import com.folioreader.ui.view.VerticalSeekbar
 import com.folioreader.ui.view.WebViewPager
 import com.folioreader.util.AppUtil
 import com.folioreader.util.HighlightUtil
+import com.folioreader.util.ReadLocatorHelper
 import com.folioreader.util.UiUtil
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -649,7 +650,8 @@ class FolioPageFragment : Fragment(),
             if (href == null) href = ""
             val created = Date().time
             val locations = Locations()
-            locations.cfi = cfi
+            val newCfi = ReadLocatorHelper.getTempFixedCfi(cfi)
+            locations.cfi = newCfi
             lastReadLocator = ReadLocator(mBookId!!, href, created, locations)
 
             val intent = Intent(FolioReader.ACTION_SAVE_READ_LOCATOR)
