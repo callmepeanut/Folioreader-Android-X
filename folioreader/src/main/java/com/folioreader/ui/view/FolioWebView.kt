@@ -1,13 +1,11 @@
 package com.folioreader.ui.view
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.util.AttributeSet
 import android.util.DisplayMetrics
 import android.util.Log
@@ -22,12 +20,15 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.GestureDetectorCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.folioreader.Config
 import com.folioreader.Constants
+import com.folioreader.FolioReader
 import com.folioreader.R
 import com.folioreader.model.DisplayUnit
 import com.folioreader.model.HighLight
 import com.folioreader.model.HighlightImpl.HighlightStyle
+import com.folioreader.model.SelectedWord
 import com.folioreader.model.sqlite.HighLightTable
 import com.folioreader.ui.activity.FolioActivity
 import com.folioreader.ui.activity.FolioActivityCallback
@@ -38,6 +39,7 @@ import com.folioreader.util.HighlightUtil
 import com.folioreader.util.UiUtil
 import dalvik.system.PathClassLoader
 import kotlinx.android.synthetic.main.text_selection.view.*
+import kotlinx.android.synthetic.main.view_webview_pager.view.*
 import org.json.JSONObject
 import org.springframework.util.ReflectionUtils
 import java.lang.ref.WeakReference
@@ -359,7 +361,10 @@ class FolioWebView : WebView {
             }
             R.id.defineSelection -> {
                 Log.v(LOG_TAG, "-> onTextSelectionItemClicked -> defineSelection -> $selectedText")
-                uiHandler.post { showDictDialog(selectedText) }
+                uiHandler.post {
+//                    showDictDialog(selectedText)
+                    notifyWordSelected(selectedText)
+                }
             }
             else -> {
                 Log.w(LOG_TAG, "-> onTextSelectionItemClicked -> unknown id = $id")
@@ -376,6 +381,13 @@ class FolioWebView : WebView {
             parentFragment.fragmentManager!!,
             DictionaryFragment::class.java.name
         )
+    }
+
+    private fun notifyWordSelected(selectedText: String?) {
+        val selectedWord = SelectedWord(selectedText ?: "", popupRect.left, popupRect.top)
+        val intent = Intent(FolioReader.ACTION_SELECTED_WORD)
+        intent.putExtra(FolioReader.EXTRA_READ_WORD, selectedWord.toJson())
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     }
 
     private fun onHighlightColorItemsClicked(style: HighlightStyle, isAlreadyCreated: Boolean) {
@@ -841,10 +853,11 @@ class FolioWebView : WebView {
                     popupWindow.dismiss()
                     popupWindow = PopupWindow(viewTextSelection, WRAP_CONTENT, WRAP_CONTENT)
                     popupWindow.isClippingEnabled = false
-                    popupWindow.showAtLocation(
-                        this@FolioWebView, Gravity.NO_GRAVITY,
-                        popupRect.left, popupRect.top
-                    )
+//                    popupWindow.showAtLocation(
+//                        this@FolioWebView, Gravity.NO_GRAVITY,
+//                        popupRect.left, popupRect.top
+//                    )
+                    loadUrl("javascript:onTextSelectionItemClicked(${R.id.defineSelection})")
                 } else {
                     Log.i(LOG_TAG, "-> Still scrolling, don't show Popup")
                     oldScrollX = currentScrollX

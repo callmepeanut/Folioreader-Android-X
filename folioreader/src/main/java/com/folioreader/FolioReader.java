@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Parcelable;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.folioreader.model.HighLight;
 import com.folioreader.model.HighlightImpl;
+import com.folioreader.model.SelectedWord;
 import com.folioreader.model.locators.ReadLocator;
 import com.folioreader.model.sqlite.DbAdapter;
 import com.folioreader.network.QualifiedTypeConverterFactory;
@@ -21,6 +23,7 @@ import com.folioreader.ui.base.OnSaveHighlight;
 import com.folioreader.ui.base.SaveReceivedHighlightTask;
 import com.folioreader.util.OnHighlightListener;
 import com.folioreader.util.ReadLocatorListener;
+import com.folioreader.util.WordSelectedListener;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -42,9 +45,11 @@ public class FolioReader {
     public static final String EXTRA_BOOK_ID = "com.folioreader.extra.BOOK_ID";
     public static final String EXTRA_READ_LOCATOR = "com.folioreader.extra.READ_LOCATOR";
     public static final String EXTRA_PORT_NUMBER = "com.folioreader.extra.PORT_NUMBER";
+    public static final String EXTRA_READ_WORD = "com.folioreader.extra.SELECTED_WORD";
     public static final String ACTION_SAVE_READ_LOCATOR = "com.folioreader.action.SAVE_READ_LOCATOR";
     public static final String ACTION_CLOSE_FOLIOREADER = "com.folioreader.action.CLOSE_FOLIOREADER";
     public static final String ACTION_FOLIOREADER_CLOSED = "com.folioreader.action.FOLIOREADER_CLOSED";
+    public static final String ACTION_SELECTED_WORD = "com.folioreader.action.SELECTED_WORD";
 
     private Context context;
     private Config config;
@@ -53,6 +58,7 @@ public class FolioReader {
     private OnHighlightListener onHighlightListener;
     private ReadLocatorListener readLocatorListener;
     private OnClosedListener onClosedListener;
+    private WordSelectedListener wordSelectedListener;
     private ReadLocator readLocator;
 
     @Nullable
@@ -93,6 +99,24 @@ public class FolioReader {
         }
     };
 
+    private BroadcastReceiver wordSelectedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String selectedWordJson = intent.getStringExtra(FolioReader.EXTRA_READ_WORD);
+            if (wordSelectedListener != null || selectedWordJson != null) {
+                SelectedWord word = SelectedWord.fromJson(selectedWordJson);
+                if (word != null) {
+                    wordSelectedListener.onSelected(word);
+                } else {
+                    Log.e("FolioReader", "SelectedWord.fromJson is null");
+                }
+            } else {
+                Log.e("FolioReader", "readLocatorListener or selectedWordJson is null");
+            }
+        }
+    };
+
     private BroadcastReceiver closedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -130,6 +154,8 @@ public class FolioReader {
                 new IntentFilter(ACTION_SAVE_READ_LOCATOR));
         localBroadcastManager.registerReceiver(closedReceiver,
                 new IntentFilter(ACTION_FOLIOREADER_CLOSED));
+        localBroadcastManager.registerReceiver(wordSelectedReceiver,
+                new IntentFilter(ACTION_SELECTED_WORD));
     }
 
     public FolioReader openBook(String assetOrSdcardPath) {
@@ -235,6 +261,11 @@ public class FolioReader {
         return singleton;
     }
 
+    public FolioReader setWordSelectedListener(WordSelectedListener wordSelectedListener) {
+        this.wordSelectedListener = wordSelectedListener;
+        return singleton;
+    }
+
     public FolioReader setOnClosedListener(OnClosedListener onClosedListener) {
         this.onClosedListener = onClosedListener;
         return singleton;
@@ -297,5 +328,6 @@ public class FolioReader {
         localBroadcastManager.unregisterReceiver(highlightReceiver);
         localBroadcastManager.unregisterReceiver(readLocatorReceiver);
         localBroadcastManager.unregisterReceiver(closedReceiver);
+        localBroadcastManager.unregisterReceiver(wordSelectedReceiver);
     }
 }

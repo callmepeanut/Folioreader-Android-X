@@ -54,6 +54,8 @@ public class HomeActivity extends AppCompatActivity
         folioReader = FolioReader.get()
                 .setOnHighlightListener(this)
                 .setReadLocatorListener(this)
+                .setWordSelectedListener(
+                        selectedWord -> Log.e(LOG_TAG, "selectedWord: " + selectedWord.getWord()))
                 .setOnClosedListener(this);
 
         getHighlightsAndSave();
