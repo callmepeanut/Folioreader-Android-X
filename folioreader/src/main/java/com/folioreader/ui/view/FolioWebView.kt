@@ -36,6 +36,7 @@ import com.folioreader.ui.fragment.DictionaryFragment
 import com.folioreader.ui.fragment.FolioPageFragment
 import com.folioreader.util.AppUtil
 import com.folioreader.util.HighlightUtil
+import com.folioreader.util.SimulateTouchUtil
 import com.folioreader.util.UiUtil
 import dalvik.system.PathClassLoader
 import kotlinx.android.synthetic.main.text_selection.view.*
@@ -43,6 +44,7 @@ import kotlinx.android.synthetic.main.view_webview_pager.view.*
 import org.json.JSONObject
 import org.springframework.util.ReflectionUtils
 import java.lang.ref.WeakReference
+import kotlin.math.abs
 import kotlin.math.floor
 
 /**
@@ -95,8 +97,6 @@ class FolioWebView : WebView {
     private lateinit var parentFragment: FolioPageFragment
 
     private var actionMode: ActionMode? = null
-    private var textSelectionCb: TextSelectionCb? = null
-    private var textSelectionCb2: TextSelectionCb2? = null
     private var selectionRect = Rect()
     private val popupRect = Rect()
     private var popupWindow = PopupWindow()
@@ -439,6 +439,10 @@ class FolioWebView : WebView {
         mSeekBarListener = listener
     }
 
+
+    private var xDown = 0f
+    private var yDown = 0f
+    private var downTime = 0L
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         //Log.v(LOG_TAG, "-> onTouchEvent -> " + AppUtil.actionToString(event.getAction()));
 
@@ -446,6 +450,26 @@ class FolioWebView : WebView {
             return false
 
         lastTouchAction = event.action
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                xDown = event.x
+                yDown = event.y
+                downTime = SystemClock.uptimeMillis()
+            }
+            MotionEvent.ACTION_UP -> {
+                val xUp = event.x
+                val yUp = event.y
+                val time = SystemClock.uptimeMillis() - downTime
+                if (abs(xUp - xDown) < 20 &&
+                    abs(yUp - yDown) < 20 &&
+                    time < SimulateTouchUtil.longClickTime
+                ) {
+                    SimulateTouchUtil.simulateLongClickInTouch(this, xUp, yUp)
+                    return true
+                }
+            }
+        }
 
         return if (folioActivityCallback.direction == Config.Direction.HORIZONTAL) {
             computeHorizontalScroll(event)
@@ -596,7 +620,7 @@ class FolioWebView : WebView {
     override fun startActionMode(callback: Callback): ActionMode {
         Log.d(LOG_TAG, "-> startActionMode")
 
-        textSelectionCb = TextSelectionCb()
+        val textSelectionCb = TextSelectionCb()
         actionMode = super.startActionMode(textSelectionCb)
         actionMode?.finish()
 
@@ -617,7 +641,7 @@ class FolioWebView : WebView {
     override fun startActionMode(callback: Callback, type: Int): ActionMode {
         Log.d(LOG_TAG, "-> startActionMode")
 
-        textSelectionCb2 = TextSelectionCb2()
+        val textSelectionCb2 = TextSelectionCb2()
         actionMode = super.startActionMode(textSelectionCb2, type)
         actionMode?.finish()
 
