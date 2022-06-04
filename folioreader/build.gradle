@@ -38,6 +38,7 @@ android {
         versionCode versions.projectVersionCode
         versionName versions.projectVersionName
         vectorDrawables.useSupportLibrary = true
+        consumerProguardFiles "proguard-rules.pro"
     }
 
     sourceSets {
